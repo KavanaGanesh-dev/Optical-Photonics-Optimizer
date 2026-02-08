@@ -11,7 +11,7 @@ from skopt.plots import plot_convergence
 # ----------------------------------------------------
 # Load trained BER model (log10(BER))
 # ----------------------------------------------------
-ber_model = joblib.load("models/ber_model_log.pkl")
+ber_model = joblib.load("/Users/kavanakiran/Documents/AI_Projects/optical-photonics-optimizer/models/ber_model_log.pkl")
 
 
 # ----------------------------------------------------
@@ -101,7 +101,7 @@ plot_convergence(result)
 plt.title("Bayesian Optimization Convergence (BER Minimization)")
 plt.tight_layout()
 plt.show()
-plt.save()
+plt.savefig('figures/optimizer_result.png', dpi=300, bbox_inches='tight')
 
 plt.figure(figsize=(6,4))
 plt.plot(result.func_vals, marker='o')
