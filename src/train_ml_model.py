@@ -84,31 +84,20 @@ def main():
     print(f"MLP SNR RMSE: {rmse_snr_mlp:.3f} dB")
     print(f"MLP SNR R2: {r2_snr_mlp:.3f}")
 
-    # Actual vs predicted snr
-
-    plt.figure(figsize=(6, 6))
-    plt.scatter(y_test_snr, y_pred_snr, alpha=0.4, label="Random Forest")
-    plt.scatter(y_test_snr, y_pred_snr_mlp, alpha=0.4, label="MLP")
-
-    mn = min(y_test_snr.min(), y_pred_snr.min(), y_pred_snr_mlp.min())
-    mx = max(y_test_snr.max(), y_pred_snr.max(), y_pred_snr_mlp.max())
-
-    plt.plot([mn, mx], [mn, mx], "k--", label="Ideal")
-
-
-
-    plt.xlabel("Actual SNR (dB)")
-    plt.ylabel("Predicted SNR (dB)")
-    plt.title("SNR Prediction: RF vs MLP")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
-
-
-
     ber_clipped = np.clip(y_ber, 1e-12, 1.0) #Prepare log10 BER target (avoid log(0) by clipping)
     y_ber_log = np.log10(ber_clipped)
+
+    # ADD THIS: Check the distribution of BER values
+    print("\n" + "="*60)
+    print("ANALYZING BER TARGET VALUES")
+    print("="*60)
+    print(f"Original BER range: {y_ber.min():.3e} to {y_ber.max():.3e}")
+    print(f"Log BER range: {y_ber_log.min():.3f} to {y_ber_log.max():.3f}")
+    print(f"Log BER mean: {y_ber_log.mean():.3f}")
+    print(f"Log BER std: {y_ber_log.std():.3f}")
+    print("\nLog BER distribution:")
+    print(y_ber_log.describe())
+    print("="*60 + "\n")
 
 
     X_train_ber, X_test_ber, y_train_ber, y_test_ber = train_test_split(
@@ -125,7 +114,13 @@ def main():
     ber_model.fit(X_train_ber, y_train_ber)
 
     #Evaluate BER model
+    
     y_pred_ber_log = ber_model.predict(X_test_ber)
+
+    rmse_ber_log = root_mean_squared_error(y_test_ber, y_pred_ber_log)
+    r2_ber_log = r2_score(y_test_ber, y_pred_ber_log)
+    print(f"BER Model RMSE (log scale): {rmse_ber_log:.3f}")
+    print(f"BER Model R² (log scale): {r2_ber_log:.3f}")
 
     # convert back to linear BER just for interpretation
     y_pred_ber = 10 ** y_pred_ber_log
@@ -142,5 +137,48 @@ def main():
         pickle.dump(ber_model, f)
 
     print("\n Both Models Ber model and SNR model stored in models folder")
+
+    # ============================================================
+    # CREATE PLOTS AT THE END (NON-BLOCKING)
+    # ============================================================
+    print("\nGenerating comparison plots...")
+    
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    
+    # ====== PLOT 1: SNR Predictions ======
+    axes[0].scatter(y_test_snr, y_pred_snr, alpha=0.4, label="Random Forest", s=20)
+    axes[0].scatter(y_test_snr, y_pred_snr_mlp, alpha=0.4, label="MLP", s=20)
+    
+    mn = min(y_test_snr.min(), y_pred_snr.min(), y_pred_snr_mlp.min())
+    mx = max(y_test_snr.max(), y_pred_snr.max(), y_pred_snr_mlp.max())
+    axes[0].plot([mn, mx], [mn, mx], "k--", linewidth=2, label="Ideal")
+    
+    axes[0].set_xlabel("Actual SNR (dB)", fontsize=12)
+    axes[0].set_ylabel("Predicted SNR (dB)", fontsize=12)
+    axes[0].set_title(f"SNR Prediction: RF vs MLP (R²={r2_snr:.3f})", fontsize=13, fontweight='bold')
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+    
+    # ====== PLOT 2: BER Predictions ======
+    axes[1].scatter(y_test_ber, y_pred_ber_log, alpha=0.5, s=20, color='red')
+    
+    mn_ber = min(y_test_ber.min(), y_pred_ber_log.min())
+    mx_ber = max(y_test_ber.max(), y_pred_ber_log.max())
+    axes[1].plot([mn_ber, mx_ber], [mn_ber, mx_ber], "k--", linewidth=2, label="Ideal")
+    
+    axes[1].set_xlabel("Actual log₁₀(BER)", fontsize=12)
+    axes[1].set_ylabel("Predicted log₁₀(BER)", fontsize=12)
+    axes[1].set_title(f"BER Prediction (R²={r2_ber_log:.3f})", fontsize=13, fontweight='bold')
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig('../figures/training_results.png', dpi=300, bbox_inches='tight')
+    print("✓ Training plots saved to figures/training_results.png")
+    plt.show()  # Show at the very end
+    
+    print("\nTraining complete!")
+
+
 if __name__ == "__main__":
     main()
