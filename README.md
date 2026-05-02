@@ -18,7 +18,7 @@ loss = base_loss + penalty_based_on_how_far_wavelength_is_from_1550
 
 
 NRZ needs less SNR
-PAN needs more SNR
+PAM needs more SNR
 QAM16 needs mouch more
 effective_SNR = SNR - modulation_penalty
 
