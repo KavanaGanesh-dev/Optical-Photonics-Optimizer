@@ -26,6 +26,7 @@ TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
 # Create directories with absolute paths
 FIGURES_DIR = os.path.join(PROJECT_ROOT, 'figures')
 LOGS_DIR = os.path.join(PROJECT_ROOT, 'logs')
+MODELS_DIR = os.path.join(PROJECT_ROOT, 'models')
 
 # Create directories
 os.makedirs(FIGURES_DIR, exist_ok=True)
@@ -55,16 +56,20 @@ logger.info("="*60)
 
 logger.info("Loading trained models...")
 try:
-    with open("/Users/kavanakiran/Documents/AI_Projects/optical-photonics-optimizer/models/snr_model.pkl", "rb") as f:
+    snr_model_path = os.path.join(MODELS_DIR, "snr_model.pkl")
+    ber_model_path = os.path.join(MODELS_DIR, "ber_model_log.pkl")
+    
+    with open(snr_model_path, "rb") as f:
         snr_model = pickle.load(f)
     
-    with open("/Users/kavanakiran/Documents/AI_Projects/optical-photonics-optimizer/models/ber_model_log.pkl", "rb") as f:
+    with open(ber_model_path, "rb") as f:
         ber_model = pickle.load(f)
     
     logger.info("Models loaded successfully!")
 except Exception as e:
     logger.error(f"Failed to load models: {e}")
     raise
+
 
 def encode_modulation(mod_format):
     """
@@ -158,10 +163,6 @@ for i in range(n_samples):
         logger.info(f"Completed {i + 1}/{n_samples} samples")
 
 logger.info("Validation complete!")
-
-print(sim_result)
-print("predict_snr", pred_snr)
-print("predict_ber",pred_ber)
 
 
 # ============================================================
