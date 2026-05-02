@@ -462,7 +462,7 @@ axes[1, 1].text(1, 0.5, mod_comparison[1], ha='center', va='center',
 plt.suptitle('Baseline vs Optimized Configuration', fontsize=16, fontweight='bold', y=0.995)
 plt.tight_layout()
 comparison_plot = os.path.join(FIGURES_DIR, f'before_after_comparison_{TIMESTAMP}.png')
-plt.savefig(comparison_plot, dpi=300, bbox_inches='tight')``
+plt.savefig(comparison_plot, dpi=300, bbox_inches='tight')
 logger.info(f"Comparison plot saved to {comparison_plot}")
 plt.close()
 
